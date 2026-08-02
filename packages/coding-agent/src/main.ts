@@ -36,6 +36,7 @@ import { exportFromFile } from "./core/export-html/index.ts";
 import type { InlineExtension } from "./core/extensions/types.ts";
 import { applyHttpProxySettings, configureHttpDispatcher } from "./core/http-dispatcher.ts";
 import { resolveCliModel, resolveModelScope, type ScopedModel } from "./core/model-resolver.ts";
+import { createArenaMapToolDefinition } from "./core/tools/arena-map.ts";
 import { createArenaPlanToolDefinition } from "./core/tools/arena-plan.ts";
 import { ModelRuntime } from "./core/model-runtime.ts";
 import { restoreStdout, takeOverStdout } from "./core/output-guard.ts";
@@ -475,6 +476,13 @@ function buildSessionOptions(
 	// Arena Hero 桥接：注入 arena_plan 工具（LLM tool calling 输出游戏计划）
 	if (parsed.arenaTools) {
 		options.customTools = [createArenaPlanToolDefinition()];
+		if (parsed.arenaMapUrl) {
+			// arena_map 地图查询代理（需要 --arena-map-url 才注册）
+			options.customTools = [
+				createArenaMapToolDefinition(parsed.arenaMapUrl),
+				createArenaPlanToolDefinition(),
+			];
+		}
 	}
 
 	// Scoped models for Ctrl+P cycling
@@ -503,10 +511,12 @@ function buildSessionOptions(
 		options.excludeTools = [...parsed.excludeTools];
 	}
 	if (parsed.arenaTools) {
-		// Arena Hero 桥接：唯一工具模式——tools allowlist 只开 arena_plan
+		// Arena Hero 桥接：唯一工具模式——tools allowlist 只开 arena 工具
 		// （sdk 原生 allowlist 语义），LLM 无其他工具可选，回合一步完成
 		options.noTools = "all";
-		options.tools = ["arena_plan"];
+		options.tools = parsed.arenaMapUrl
+			? ["arena_map", "arena_plan"]
+			: ["arena_plan"];
 	}
 
 	return { options, cliThinkingFromModel, diagnostics };

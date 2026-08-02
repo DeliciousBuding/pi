@@ -34,6 +34,7 @@ export interface Args {
 	noTools?: boolean;
 	noBuiltinTools?: boolean;
 	arenaTools?: boolean;
+	arenaMapUrl?: string;
 	extensions?: string[];
 	noExtensions?: boolean;
 	print?: boolean;
@@ -122,6 +123,8 @@ export function parseArgs(args: string[]): Args {
 			result.noBuiltinTools = true;
 		} else if (arg === "--arena-tools") {
 			result.arenaTools = true;
+		} else if (arg === "--arena-map-url" && i + 1 < args.length) {
+			result.arenaMapUrl = args[++i];
 		} else if ((arg === "--tools" || arg === "-t") && i + 1 < args.length) {
 			result.tools = args[++i]
 				.split(",")
