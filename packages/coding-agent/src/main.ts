@@ -36,6 +36,7 @@ import { exportFromFile } from "./core/export-html/index.ts";
 import type { InlineExtension } from "./core/extensions/types.ts";
 import { applyHttpProxySettings, configureHttpDispatcher } from "./core/http-dispatcher.ts";
 import { resolveCliModel, resolveModelScope, type ScopedModel } from "./core/model-resolver.ts";
+import { createArenaPlanToolDefinition } from "./core/tools/arena-plan.ts";
 import { ModelRuntime } from "./core/model-runtime.ts";
 import { restoreStdout, takeOverStdout } from "./core/output-guard.ts";
 import { type AppMode, resolveProjectTrusted } from "./core/project-trust.ts";
@@ -471,6 +472,11 @@ function buildSessionOptions(
 		options.thinkingLevel = parsed.thinking;
 	}
 
+	// Arena Hero 桥接：注入 arena_plan 工具（LLM tool calling 输出游戏计划）
+	if (parsed.arenaTools) {
+		options.customTools = [createArenaPlanToolDefinition()];
+	}
+
 	// Scoped models for Ctrl+P cycling
 	// Keep thinking level undefined when not explicitly set in the model pattern.
 	// Undefined means "inherit current session thinking level" during cycling.
@@ -495,6 +501,12 @@ function buildSessionOptions(
 	}
 	if (parsed.excludeTools) {
 		options.excludeTools = [...parsed.excludeTools];
+	}
+	if (parsed.arenaTools) {
+		// Arena Hero 桥接：唯一工具模式——tools allowlist 只开 arena_plan
+		// （sdk 原生 allowlist 语义），LLM 无其他工具可选，回合一步完成
+		options.noTools = "all";
+		options.tools = ["arena_plan"];
 	}
 
 	return { options, cliThinkingFromModel, diagnostics };

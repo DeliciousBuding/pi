@@ -497,7 +497,7 @@ export interface ToolDefinition<TParams extends TSchema = TSchema, TDetails = un
 	) => Component;
 }
 
-type AnyToolDefinition = ToolDefinition<any, any, any>;
+export type AnyToolDefinition = ToolDefinition<any, any, any>;
 
 /**
  * Preserve parameter inference for standalone tool definitions.

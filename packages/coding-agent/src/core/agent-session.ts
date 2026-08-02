@@ -89,6 +89,7 @@ import {
 	type TreePreparation,
 	type TurnEndEvent,
 	type TurnStartEvent,
+	type AnyToolDefinition,
 	wrapRegisteredTools,
 } from "./extensions/index.ts";
 import { emitSessionShutdownEvent } from "./extensions/runner.ts";
@@ -203,7 +204,7 @@ export interface AgentSessionConfig {
 	/** Resource loader for extensions, skills, prompts, themes, context files, and system prompt */
 	resourceLoader: ResourceLoader;
 	/** SDK custom tools registered outside extensions */
-	customTools?: ToolDefinition[];
+	customTools?: AnyToolDefinition[];
 	/** Canonical model/auth runtime used by coding-agent internals. */
 	modelRuntime: ModelRuntime;
 	/** Initial active built-in tool names. Default: [read, bash, edit, write] */
