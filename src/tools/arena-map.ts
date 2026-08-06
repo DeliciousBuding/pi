@@ -6,19 +6,17 @@ import type {
 	ToolDefinition,
 	ToolRenderResultOptions,
 } from "@earendil-works/pi-coding-agent";
-import type { Theme } from "@earendil-works/pi-tui";
 
 /**
  * arena_map：Arena Hero 共享地图只读查询工具（pi-arena extension）。
  *
- * 地图数据在 arena-bot 侧（SQLite map_store），本工具是查询代理：
- * execute 发 HTTP 到 arena-bot 调试端点 /map/query，把结果 JSON 返回给 LLM。
- * 后端地址从环境变量 ARENA_MAP_URL 注入（Python 侧 spawn 时设置）。
+ * 地图数据由宿主 Arena runtime 提供，本工具只代理读取 /map/query，
+ * 再把结果 JSON 返回给 LLM。后端地址从环境变量 ARENA_MAP_URL 注入。
  * 不 terminate——查询后模型继续思考/再查/提交 arena_plan。
- * Schema SSOT：contracts/world-query.schema.json（协议版本 1.0）。
  */
 
 type ToolRenderCtx = Parameters<NonNullable<ToolDefinition["renderCall"]>>[2];
+type ToolTheme = Parameters<NonNullable<ToolDefinition["renderResult"]>>[2];
 
 const arenaMapSchema = Type.Object(
 	{
@@ -113,7 +111,7 @@ export function createArenaMapToolDefinition(
 		renderResult(
 			result: AgentToolResult<ArenaMapDetails | undefined>,
 			_options: ToolRenderResultOptions,
-			theme: Theme,
+			theme: ToolTheme,
 			context: ToolRenderCtx,
 		) {
 			const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);

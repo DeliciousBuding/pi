@@ -1,14 +1,31 @@
 {
   "name": "@arena/pi-arena",
   "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
   "description": "Arena Hero 领域适配层：把 Arena 能力作为标准 Pi Extension 暴露给 Agent（arena_plan / arena_map）。",
   "type": "module",
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"
   },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "prepublishOnly": "node -e \"console.error('Publishing blocked: license terms are unresolved.'); process.exit(1)\""
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
     "typebox": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=22.19.0"
   }
 }

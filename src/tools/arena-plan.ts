@@ -6,19 +6,18 @@ import type {
 	ToolDefinition,
 	ToolRenderResultOptions,
 } from "@earendil-works/pi-coding-agent";
-import type { Theme } from "@earendil-works/pi-tui";
 
 /**
  * arena_plan：Arena Hero 游戏动作工具（pi-arena extension）。
  *
  * 给 LLM 的原生 tool calling 入口——模型通过 tool_use 输出下一 Tick 计划，
- * arena-bot 从 tool_execution_start 事件提取 input 并校验后提交游戏。
+ * 宿主从 tool_execution_start 事件提取 input，并在任何提交前负责校验。
  * execute 只做"确认接收"并 terminate（回合立即结束，不烧多余 token）。
- * Schema SSOT：contracts/arena-plan.schema.json（协议版本 1.0）。
  */
 
 // ToolRenderContext 未从 pi 包入口导出，从 ToolDefinition 提取（保持类型安全）
 type ToolRenderCtx = Parameters<NonNullable<ToolDefinition["renderCall"]>>[2];
+type ToolTheme = Parameters<NonNullable<ToolDefinition["renderResult"]>>[2];
 
 const actionSchema = Type.Object(
 	{
@@ -148,7 +147,7 @@ export function createArenaPlanToolDefinition(): ToolDefinition<
 			_signal: AbortSignal | undefined,
 			_onUpdate: AgentToolUpdateCallback<undefined> | undefined,
 		): Promise<AgentToolResult<ArenaPlanDetails | undefined>> {
-			// 计划已由调用方（arena-bot）从 tool_use 提取，这里只确认并结束回合。
+			// 计划已由宿主从 tool_use 提取，这里只确认并结束回合。
 			const core = params.core;
 			const coreAction =
 				core === null
@@ -189,7 +188,7 @@ export function createArenaPlanToolDefinition(): ToolDefinition<
 		renderResult(
 			result: AgentToolResult<ArenaPlanDetails | undefined>,
 			_options: ToolRenderResultOptions,
-			theme: Theme,
+			theme: ToolTheme,
 			context: ToolRenderCtx,
 		) {
 			const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
