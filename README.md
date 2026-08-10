@@ -1,76 +1,30 @@
 # @arena/pi-arena
 
-`@arena/pi-arena` is a source-distributed Pi extension for Arena Hero. It
-registers Arena-specific tools with Pi while leaving game-state ownership,
-validation, and production submission to the consuming Arena runtime.
+[Pi](https://github.com/microsoft/pi) 的 Arena Hero 扩展包：向 Pi 注册 Arena Hero 专属工具，供策略开发与地图查询使用。
 
-## Tools
+## 工具
 
-| Tool | Behavior |
-| --- | --- |
-| `arena_plan` | Returns one candidate tick plan to the host and terminates the Pi turn. It does not submit actions to production. |
-| `arena_map` | Optionally queries the host's read-only `/map/query` endpoint for map statistics, known obstacles, or allies. It is registered only when `ARENA_MAP_URL` is set. |
+| 工具 | 行为 |
+|---|---|
+| `arena_plan` | 返回一份候选 tick 计划并结束 Pi 回合；不直接提交动作到线上 |
+| `arena_map` | 可选查询宿主只读 `/map/query` 端点，获取地图统计、已知障碍或盟友信息；仅在设置 `ARENA_MAP_URL` 时注册 |
 
-The map request has a five-second timeout so the host retains time to validate
-and process the plan.
+地图请求带五秒超时，为宿主保留校验与处理计划的时间。
 
-## Runtime contract
-
-The package exports `src/index.ts` directly and therefore requires a Pi host
-that can load TypeScript extensions. Its direct runtime peer dependencies are:
-
-- `@earendil-works/pi-coding-agent`
-- `@earendil-works/pi-tui`
-- `typebox`
-
-Peer versions are intentionally not pinned in this extracted package. The
-consuming host owns compatible versions and its lockfile. `ARENA_MAP_URL` is
-the only extension-specific environment variable.
-
-## Build and checks
-
-This repository has no generated build output or dependency lockfile. Its
-minimal no-emit TypeScript check uses the TypeScript and Node type ranges
-already established by the consuming Arena TypeScript host. After installing
-the peer and development dependencies, changes should pass:
+## 安装
 
 ```bash
-npm run check
-npm pack --dry-run
+pnpm add @arena/pi-arena
 ```
 
-`skipLibCheck` isolates this package's check from declaration-file issues in
-the Pi dependency tree; the extension's own source remains under `strict`
-checking.
+包直接导出 `src/index.ts`，需要支持 TypeScript 扩展的 Pi 宿主加载。
 
-## Arena coordination
+## 运行时契约
 
-This is an independent repository, not a package managed by the Arena root
-repository. In the coordination checkout, project status and boundaries live
-in the sibling root documentation:
+- `arena_plan`：单轮候选计划，供宿主校验后决定是否采纳
+- `arena_map`：只读查询，不修改任何游戏状态
+- 所有工具均为候选语义：游戏状态的持有、校验与最终提交由消费方 Arena 运行时负责
 
-- [`../docs/progress/MASTER.md`](../docs/progress/MASTER.md)
-- [`../docs/design/repo-structure.md`](../docs/design/repo-structure.md)
-- [`../docs/design/ml-data-pipeline.md`](../docs/design/ml-data-pipeline.md)
+## 许可证
 
-Those documents establish that the TypeScript runtime owns production actions
-and real-data writes. This extension only exposes Pi tools to that host.
-
-## Extraction provenance
-
-The source was extracted without Git ancestry from `packages/pi-arena` in the
-Arena TypeScript repository. The original extension was introduced by commit
-`fbb1d262467d7034be919ac6f8bb44bd8e416364`; the map schema was corrected by
-`2f53d863ebc578cadc2ed78e742292c40436382d`. The four files in this repository's
-initial commit `f685051494242e844e19b39ebc1f0cc80ee9ebc0` are blob-identical to the
-package snapshot at `2f53d863ebc578cadc2ed78e742292c40436382d`.
-
-## License status
-
-No license was included in the extracted package tree or its original package
-metadata, and the independent repository's initial commit did not add one.
-Licenses of peer dependencies do not establish a license for this source. No
-`LICENSE` file is provided. Current package metadata says `UNLICENSED`, marks
-the package `private`, and uses a failing `prepublishOnly` guard to block npm
-publication. Publishing or redistribution requires the copyright owner to
-establish licensing terms first.
+见包内 `LICENSE`。
